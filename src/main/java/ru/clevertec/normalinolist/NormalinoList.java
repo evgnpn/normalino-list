@@ -221,6 +221,7 @@ public class NormalinoList<T> implements List<T> {
 
             if (!collection.contains(element)) {
                 it.remove();
+                size--;
             }
         }
 
