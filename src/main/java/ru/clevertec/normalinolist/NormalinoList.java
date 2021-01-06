@@ -231,6 +231,7 @@ public class NormalinoList<T> implements List<T> {
     @Override
     public void clear() {
         firstNode = null;
+        size = 0;
     }
 
     @Override
