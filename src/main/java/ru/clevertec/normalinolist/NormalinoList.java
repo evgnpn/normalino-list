@@ -277,11 +277,11 @@ public class NormalinoList<T> implements List<T> {
     public List<T> subList(int fromIndex, int toIndex) {
 
         if (fromIndex < 0 || fromIndex + 1 > size()
-                || toIndex < fromIndex || toIndex + 1 > size()) {
+                || toIndex < fromIndex || toIndex > size()) {
             throw new IndexOutOfBoundsException();
         }
 
-        var nodesCount = toIndex - fromIndex + 1;
+        var nodesCount = toIndex - fromIndex;
         var fromNode = moveToIndex(fromIndex);
 
         var list = new NormalinoList<T>();
