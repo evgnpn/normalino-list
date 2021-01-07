@@ -202,7 +202,13 @@ public class NormalinoList<T> implements List<T> {
             return false;
         }
 
-        return this.stream().allMatch(collection::contains);
+        for (var element : collection) {
+            if (!contains(element)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -216,16 +222,18 @@ public class NormalinoList<T> implements List<T> {
 
         var it = (NodeValueIterator) listIterator();
 
+        var retainedCount = 0;
+
         while (it.hasNext()) {
             var element = it.next();
 
             if (!collection.contains(element)) {
                 it.remove();
-                size--;
+                retainedCount++;
             }
         }
 
-        return false;
+        return retainedCount > 0;
     }
 
     @Override
@@ -263,11 +271,12 @@ public class NormalinoList<T> implements List<T> {
 
         var lastIndex = -1;
 
-        var it = iterator();
+        var it = (ListNodeValueIterator)this.listIterator();
 
-        for (int i = 0; it.hasNext(); i++) {
-            if (it.next().equals(o)) {
-                lastIndex = i;
+        while (it.hasNext()) {
+            var element = it.next();
+            if (element.equals(o)) {
+                lastIndex = it.previousIndex();
             }
         }
 
@@ -362,7 +371,7 @@ public class NormalinoList<T> implements List<T> {
 
     private void throwIfIndexOutOfBounds(int index) {
         if (index < 0 || index + 1 > size()) {
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException("index: " + index + ", size: " + size());
         }
     }
 
@@ -447,7 +456,11 @@ public class NormalinoList<T> implements List<T> {
 
         @Override
         public int previousIndex() {
-            throw new UnsupportedOperationException();
+            return index - 1;
+        }
+
+        public int currentIndex() {
+            return index;
         }
 
         @Override
