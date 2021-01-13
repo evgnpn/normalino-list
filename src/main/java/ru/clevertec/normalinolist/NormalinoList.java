@@ -329,6 +329,11 @@ public class NormalinoList<T> implements List<T> {
 
         return array;
     }
+	
+	@Override
+    public <T1> T1[] toArray(IntFunction<T1[]> generator) {
+        return toArray(generator.apply(size()));
+    }
 
     @Override
     public Iterator<T> iterator() {
