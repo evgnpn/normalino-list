@@ -1,6 +1,7 @@
+package ru.clevertec.normalino.list;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.clevertec.normalinolist.NormalinoList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -194,8 +195,7 @@ public class AddTests {
             assertEquals(list.get(i), listCopy.get(i));
         }
 
-        for (int i = centerIndex, j = 0; i < subListSize + centerIndex; i++, j++)
-        {
+        for (int i = centerIndex, j = 0; i < subListSize + centerIndex; i++, j++) {
             assertEquals(list.get(i), subList.get(j));
         }
 

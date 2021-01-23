@@ -1,6 +1,7 @@
+package ru.clevertec.normalino.list;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.clevertec.normalinolist.NormalinoList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

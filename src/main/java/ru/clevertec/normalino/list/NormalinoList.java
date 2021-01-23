@@ -1,13 +1,19 @@
-package ru.clevertec.normalinolist;
+package ru.clevertec.normalino.list;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.IntFunction;
 
 public class NormalinoList<T> implements List<T> {
 
-    private Node firstNode;
+    private final static int TAIL_I = 0;
+    private final static int HEAD_I = 1;
+
+    private Node tail;
+    private Node head;
     private int size;
 
     public NormalinoList() {
@@ -19,15 +25,9 @@ public class NormalinoList<T> implements List<T> {
 
     @Override
     public boolean add(T element) {
-
-        if (firstNode == null) {
-            firstNode = new Node(element);
-        } else {
-            var lastNode = moveToIndex(size - 1);
-            lastNode.setNext(new Node(element));
-        }
-
-        return size < ++size;
+        return isEmpty()
+                ? addToEmpty(element)
+                : addAfterLast(element);
     }
 
     @Override
@@ -37,20 +37,18 @@ public class NormalinoList<T> implements List<T> {
             throw new IndexOutOfBoundsException();
         }
 
-        var newNode = new Node(element);
-
-        if (index == 0) {
-            newNode.setNext(firstNode);
-            firstNode = newNode;
+        if (isEmpty()) {
+            addToEmpty(element);
+        } else if (index == size) {
+            addAfterLast(element);
+        } else if (index == 0) {
+            addBeforeFirst(element);
         } else {
-            var beforeNode = moveToIndex(index - 1);
-            newNode.setNext(beforeNode.next());
-            beforeNode.setNext(newNode);
+            addBetween(index, element);
         }
-
-        size++;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean addAll(Collection<? extends T> collection) {
 
@@ -58,20 +56,12 @@ public class NormalinoList<T> implements List<T> {
             return false;
         }
 
-        var nodesToAdd = createNodes(collection);
-
-        if (isEmpty()) {
-            firstNode = nodesToAdd.getFirstNode();
-        } else {
-            var lastNode = moveToIndex(size - 1);
-            lastNode.setNext(nodesToAdd.getFirstNode());
-        }
-
-        size += collection.size();
-
-        return true;
+        return isEmpty()
+                ? addToEmpty((T[]) collection.toArray())
+                : addAfterLast((T[]) collection.toArray());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean addAll(int index, Collection<? extends T> collection) {
 
@@ -83,18 +73,16 @@ public class NormalinoList<T> implements List<T> {
             throw new IndexOutOfBoundsException();
         }
 
-        var nodesToAdd = createNodes(collection);
-
-        if (index == 0) {
-            nodesToAdd.getLastNode().setNext(firstNode);
-            firstNode = nodesToAdd.getFirstNode();
+        if (isEmpty()) {
+            addToEmpty((T[]) collection.toArray());
+        } else if (index == size) {
+            addAfterLast((T[]) collection.toArray());
+        } else if (index == 0) {
+            addBeforeFirst((T[]) collection.toArray());
         } else {
-            var beforeNode = moveToIndex(index - 1);
-            nodesToAdd.getLastNode().setNext(beforeNode.next());
-            beforeNode.setNext(nodesToAdd.getFirstNode());
+            addBetween(index, (T[]) collection.toArray());
         }
 
-        size += collection.size();
         return true;
     }
 
@@ -106,8 +94,8 @@ public class NormalinoList<T> implements List<T> {
         T prevValue;
 
         if (index == 0) {
-            prevValue = firstNode.value();
-            firstNode = firstNode.hasNext() ? firstNode.next() : null;
+            prevValue = tail.value();
+            tail = tail.hasNext() ? tail.next() : null;
         } else {
             var beforeNode = moveToIndex(index - 1);
             prevValue = beforeNode.next().value();
@@ -121,14 +109,14 @@ public class NormalinoList<T> implements List<T> {
     @Override
     public boolean remove(Object o) {
 
-        if (firstNode == null) {
+        if (tail == null) {
             return false;
         }
 
-        var currentNode = firstNode;
+        var currentNode = tail;
 
         if (currentNode.value().equals(o)) {
-            firstNode = firstNode.next();
+            tail = tail.next();
             return size > --size;
         }
 
@@ -217,6 +205,7 @@ public class NormalinoList<T> implements List<T> {
         return moveToIndex(index).value();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean retainAll(Collection<?> collection) {
 
@@ -238,7 +227,7 @@ public class NormalinoList<T> implements List<T> {
 
     @Override
     public void clear() {
-        firstNode = null;
+        tail = head = null;
         size = 0;
     }
 
@@ -249,7 +238,7 @@ public class NormalinoList<T> implements List<T> {
 
     @Override
     public boolean isEmpty() {
-        return firstNode == null;
+        return size == 0;
     }
 
     @Override
@@ -271,7 +260,7 @@ public class NormalinoList<T> implements List<T> {
 
         var lastIndex = -1;
 
-        var it = (ListNodeValueIterator)this.listIterator();
+        var it = (ListNodeValueIterator) this.listIterator();
 
         while (it.hasNext()) {
             var element = it.next();
@@ -308,9 +297,19 @@ public class NormalinoList<T> implements List<T> {
 
     @Override
     public Object[] toArray() {
-        return stream().toArray(Object[]::new);
+
+        var it = iterator();
+
+        var arr = new Object[size];
+
+        for (int i = 0; it.hasNext(); i++) {
+            arr[i] = it.next();
+        }
+
+        return arr;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T1> T1[] toArray(T1[] array) {
 
@@ -329,55 +328,107 @@ public class NormalinoList<T> implements List<T> {
 
         return array;
     }
-	
-	@Override
+
+    @Override
     public <T1> T1[] toArray(IntFunction<T1[]> generator) {
         return toArray(generator.apply(size()));
     }
 
     @Override
     public Iterator<T> iterator() {
-        return new NodeValueIterator(firstNode);
+        return new NodeValueIterator(tail);
     }
 
     @Override
     public ListIterator<T> listIterator() {
-        return new ListNodeValueIterator(firstNode, 0);
+        return new ListNodeValueIterator(tail, 0);
     }
 
     @Override
     public ListIterator<T> listIterator(int index) {
-        return new ListNodeValueIterator(firstNode, index);
+        return new ListNodeValueIterator(tail, index);
     }
 
     private Node moveToIndex(int index) {
-        var currentNode = firstNode;
+        var currentNode = tail;
         for (int i = 0; i < index; i++) {
             currentNode = currentNode.next();
         }
         return currentNode;
     }
 
-    private NodePair createNodes(Collection<? extends T> collection) {
+    @SuppressWarnings("unchecked")
+    private Node[] createNodes(T... elements) {
 
-        var it = collection.iterator();
+        var newNode = new Node(elements[0]);
+        var tail = newNode;
+        var head = newNode;
 
-        var firstNode = new Node(it.next());
-        var nodePair = new NodePair(firstNode, firstNode);
-
-        while (it.hasNext()) {
-            var newNode = new Node(it.next());
-            nodePair.getLastNode().setNext(newNode);
-            nodePair.setLastNode(newNode);
+        for (int i = 1; i < elements.length; i++) {
+            newNode = new Node(elements[i]);
+            head.setNext(newNode);
+            head = newNode;
         }
 
-        return nodePair;
+        var arr = (Node[]) Array.newInstance(Node.class, 2);
+        arr[TAIL_I] = tail;
+        arr[HEAD_I] = head;
+
+        return arr;
     }
 
     private void throwIfIndexOutOfBounds(int index) {
         if (index < 0 || index + 1 > size()) {
             throw new IndexOutOfBoundsException("index: " + index + ", size: " + size());
         }
+    }
+
+    @SafeVarargs
+    private boolean addToEmpty(T... elements) {
+
+        var pair = createNodes(elements);
+
+        tail = pair[TAIL_I];
+        head = pair[HEAD_I];
+
+        size += elements.length;
+        return true;
+    }
+
+    @SafeVarargs
+    private boolean addAfterLast(T... elements) {
+
+        var pair = createNodes(elements);
+
+        head.setNext(pair[TAIL_I]);
+        head = pair[HEAD_I];
+
+        size += elements.length;
+        return true;
+    }
+
+    @SafeVarargs
+    private void addBetween(int index, T... elements) {
+
+        var pair = createNodes(elements);
+
+        var beforeNode = moveToIndex(index - 1);
+
+        pair[HEAD_I].setNext(beforeNode.next());
+        beforeNode.setNext(pair[TAIL_I]);
+
+        size += elements.length;
+    }
+
+    @SafeVarargs
+    private void addBeforeFirst(T... elements) {
+
+        var pair = createNodes(elements);
+
+        pair[HEAD_I].setNext(tail);
+        tail = pair[TAIL_I];
+
+        size += elements.length;
     }
 
     private class Node {
@@ -495,36 +546,4 @@ public class NormalinoList<T> implements List<T> {
             return super.next();
         }
     }
-
-    private class NodePair {
-
-        private Node firstNode;
-        private Node lastNode;
-
-        public NodePair() {
-        }
-
-        public NodePair(Node firstNode, Node lastNode) {
-            this.firstNode = firstNode;
-            this.lastNode = lastNode;
-        }
-
-        public Node getFirstNode() {
-            return firstNode;
-        }
-
-        public void setFirstNode(Node firstNode) {
-            this.firstNode = firstNode;
-        }
-
-        public Node getLastNode() {
-            return lastNode;
-        }
-
-        public void setLastNode(Node lastNode) {
-            this.lastNode = lastNode;
-        }
-    }
 }
-
-

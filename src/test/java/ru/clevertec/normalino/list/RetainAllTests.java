@@ -1,11 +1,12 @@
+package ru.clevertec.normalino.list;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.clevertec.normalinolist.NormalinoList;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RetainAllTests {
 

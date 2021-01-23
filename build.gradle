@@ -1,9 +1,10 @@
 plugins {
-    id 'application'
+    id 'java'
 }
 
-group 'ru.clevertec.normalino-list'
+group 'ru.clevertec.normalino'
 version '1.0'
+description 'ru.clevertec.normalino.list'
 
 repositories {
     mavenCentral()
@@ -16,8 +17,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-application {
-    mainClass = 'ru.clevertec.normalinolist.Main'
 }
