@@ -13,7 +13,7 @@ public class NormalinoList<T> implements List<T> {
     private final static int HEAD_I = 1;
 
     private Node tail;
-    private Node head;
+    public Node head;
     private int size;
 
     public NormalinoList() {
@@ -91,43 +91,57 @@ public class NormalinoList<T> implements List<T> {
 
         throwIfIndexOutOfBounds(index);
 
-        T prevValue;
+        T deletedValue;
 
         if (index == 0) {
-            prevValue = tail.value();
-            tail = tail.hasNext() ? tail.next() : null;
+            deletedValue = tail.value();
+            tail = tail.hasNext() ? tail.next() : (head = null);
         } else {
             var beforeNode = moveToIndex(index - 1);
-            prevValue = beforeNode.next().value();
+            deletedValue = beforeNode.next().value();
             beforeNode.setNext(beforeNode.hasNext() ? beforeNode.next().next() : null);
+
+            if (!beforeNode.hasNext()) {
+                head = beforeNode;
+            }
         }
 
         size--;
-        return prevValue;
+        return deletedValue;
     }
 
     @Override
     public boolean remove(Object o) {
 
-        if (tail == null) {
+        if (isEmpty()) {
             return false;
         }
 
-        var currentNode = tail;
+        var start = tail;
 
-        if (currentNode.value().equals(o)) {
+        if (start.value().equals(o)) {
             tail = tail.next();
-            return size > --size;
+            if (!tail.hasNext()) {
+                head = tail;
+            }
+            size--;
+            return true;
         }
 
-        while (currentNode.hasNext()) {
+        while (start.hasNext()) {
 
-            if (currentNode.next().value().equals(o)) {
-                currentNode.setNext(currentNode.next().hasNext() ? currentNode.next().next() : null);
-                return size > --size;
+            if (start.next().value().equals(o)) {
+                start.setNext(start.next().hasNext() ? start.next().next() : null);
+
+                if (!start.hasNext()) {
+                    head = start;
+                }
+
+                size--;
+                return true;
             }
 
-            currentNode = currentNode.next();
+            start = start.next();
         }
 
         return false;
