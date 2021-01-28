@@ -121,7 +121,7 @@ public class NormalinoList<T> implements List<T> {
 
         if (start.value().equals(o)) {
             tail = tail.next();
-            if (!tail.hasNext()) {
+            if (tail == null || !tail.hasNext()) {
                 head = tail;
             }
             size--;
