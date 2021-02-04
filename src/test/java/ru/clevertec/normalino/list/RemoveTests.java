@@ -3,7 +3,6 @@ package ru.clevertec.normalino.list;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -17,18 +16,6 @@ public class RemoveTests {
     public void beforeEach() {
         list = new NormalinoList<>();
         Data.seed(list, 10);
-    }
-
-    @Test
-    public void asdasd() {
-
-        var r = new ArrayList<>();
-        r.add("e9");
-        r.add("e8");
-        list.removeAll(r);
-        var head = list.head;
-        var sdd = 0;
-
     }
 
     @Test
@@ -64,7 +51,7 @@ public class RemoveTests {
     @Test
     public void removeAll() {
 
-        var toRemoveItems = IntStream.range(0, list.size()).filter(i -> i % 2 == 0)
+        var toRemoveItems = IntStream.range(0, list.size()).filter(i -> i != 0 && i % 2 == 0)
                 .mapToObj(i -> list.get(i)).collect(Collectors.toList());
 
         list.removeAll(toRemoveItems);

@@ -1,5 +1,6 @@
 package ru.clevertec.normalino.list;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
@@ -91,57 +92,33 @@ public class NormalinoList<T> implements List<T> {
 
         throwIfIndexOutOfBounds(index);
 
-        T deletedValue;
+        var it = new ListNodeValueIterator(tail, 0);
 
-        if (index == 0) {
-            deletedValue = tail.value();
-            tail = tail.hasNext() ? tail.next() : (head = null);
-        } else {
-            var beforeNode = moveToIndex(index - 1);
-            deletedValue = beforeNode.next().value();
-            beforeNode.setNext(beforeNode.hasNext() ? beforeNode.next().next() : null);
-
-            if (!beforeNode.hasNext()) {
-                head = beforeNode;
+        while (it.hasNext()) {
+            var value = it.next();
+            if (it.index == index) {
+                it.remove();
+                return value;
             }
         }
 
-        size--;
-        return deletedValue;
+        return null;
     }
 
     @Override
     public boolean remove(Object o) {
 
-        if (isEmpty()) {
+        if (o == null || isEmpty()) {
             return false;
         }
 
-        var start = tail;
+        var it = new ListNodeValueIterator(tail, 0);
 
-        if (start.value().equals(o)) {
-            tail = tail.next();
-            if (tail == null || !tail.hasNext()) {
-                head = tail;
-            }
-            size--;
-            return true;
-        }
-
-        while (start.hasNext()) {
-
-            if (start.next().value().equals(o)) {
-                start.setNext(start.next().hasNext() ? start.next().next() : null);
-
-                if (!start.hasNext()) {
-                    head = start;
-                }
-
-                size--;
+        while (it.hasNext()) {
+            if (it.next().equals(o)) {
+                it.remove();
                 return true;
             }
-
-            start = start.next();
         }
 
         return false;
@@ -154,34 +131,29 @@ public class NormalinoList<T> implements List<T> {
             return false;
         }
 
-        var it = iterator();
+        var it = new ListNodeValueIterator(tail, 0);
 
-        var index = 0;
         var removedCount = 0;
 
         while (it.hasNext()) {
-
-            var element = it.next();
-
-            if (collection.contains(element)) {
-                remove(index--);
+            var value = it.next();
+            if (collection.contains(value)) {
+                it.remove();
                 removedCount++;
             }
-
-            index++;
         }
 
         return removedCount > 0;
     }
 
     @Override
-    public T set(int index, T element) {
+    public T set(int index, T value) {
 
         throwIfIndexOutOfBounds(index);
 
         var node = moveToIndex(index);
-        var prevValue = node.value();
-        node.setValue(element);
+        var prevValue = node.value;
+        node.value = value;
         return prevValue;
     }
 
@@ -216,14 +188,13 @@ public class NormalinoList<T> implements List<T> {
     @Override
     public T get(int index) {
         throwIfIndexOutOfBounds(index);
-        return moveToIndex(index).value();
+        return moveToIndex(index).value;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean retainAll(Collection<?> collection) {
 
-        var it = (NodeValueIterator) listIterator();
+        var it = new ListNodeValueIterator(tail, 0);
 
         var retainedCount = 0;
 
@@ -274,12 +245,20 @@ public class NormalinoList<T> implements List<T> {
 
         var lastIndex = -1;
 
-        var it = (ListNodeValueIterator) this.listIterator();
+        if (isEmpty()) {
+            return lastIndex;
+        }
+
+        if (head.value.equals(o)) {
+            return size - 1;
+        }
+
+        var it = new ListNodeValueIterator(tail, 0);
 
         while (it.hasNext()) {
             var element = it.next();
             if (element.equals(o)) {
-                lastIndex = it.previousIndex();
+                lastIndex = it.index;
             }
         }
 
@@ -294,16 +273,16 @@ public class NormalinoList<T> implements List<T> {
             throw new IndexOutOfBoundsException();
         }
 
-        var nodesCount = toIndex - fromIndex;
         var fromNode = moveToIndex(fromIndex);
 
         var list = new NormalinoList<T>();
 
         var currentNode = fromNode;
+        var nodesCount = toIndex - fromIndex;
 
         for (int i = 0; i < nodesCount; i++) {
-            list.add(currentNode.value());
-            currentNode = currentNode.next();
+            list.add(currentNode.value);
+            currentNode = currentNode.next;
         }
 
         return list;
@@ -350,7 +329,7 @@ public class NormalinoList<T> implements List<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return new NodeValueIterator(tail);
+        return new ListNodeValueIterator(tail, 0);
     }
 
     @Override
@@ -366,7 +345,7 @@ public class NormalinoList<T> implements List<T> {
     private Node moveToIndex(int index) {
         var currentNode = tail;
         for (int i = 0; i < index; i++) {
-            currentNode = currentNode.next();
+            currentNode = currentNode.next;
         }
         return currentNode;
     }
@@ -380,7 +359,7 @@ public class NormalinoList<T> implements List<T> {
 
         for (int i = 1; i < elements.length; i++) {
             newNode = new Node(elements[i]);
-            head.setNext(newNode);
+            head.next = newNode;
             head = newNode;
         }
 
@@ -414,7 +393,7 @@ public class NormalinoList<T> implements List<T> {
 
         var pair = createNodes(elements);
 
-        head.setNext(pair[TAIL_I]);
+        head.next = pair[TAIL_I];
         head = pair[HEAD_I];
 
         size += elements.length;
@@ -428,8 +407,8 @@ public class NormalinoList<T> implements List<T> {
 
         var beforeNode = moveToIndex(index - 1);
 
-        pair[HEAD_I].setNext(beforeNode.next());
-        beforeNode.setNext(pair[TAIL_I]);
+        pair[HEAD_I].next = beforeNode.next;
+        beforeNode.next = pair[TAIL_I];
 
         size += elements.length;
     }
@@ -439,13 +418,13 @@ public class NormalinoList<T> implements List<T> {
 
         var pair = createNodes(elements);
 
-        pair[HEAD_I].setNext(tail);
+        pair[HEAD_I].next = tail;
         tail = pair[TAIL_I];
 
         size += elements.length;
     }
 
-    private class Node {
+    private class Node implements Serializable {
 
         private T value;
         private Node next;
@@ -454,64 +433,42 @@ public class NormalinoList<T> implements List<T> {
             this.value = value;
         }
 
-        public Node(T value, Node next) {
-            this.value = value;
-            this.next = next;
-        }
-
-        public T value() {
-            return value;
-        }
-
-        public void setValue(T value) {
-            this.value = value;
-        }
-
-        public void setNext(Node next) {
-            this.next = next;
-        }
-
         public boolean hasNext() {
             return next != null;
         }
-
-        public Node next() {
-            return next;
-        }
     }
 
-    private class NodeValueIterator implements Iterator<T> {
+    private class ListNodeValueIterator implements ListIterator<T> {
 
-        private Node node;
+        private int index;
+        private Node previousNode;
+        private Node currentNode;
 
-        public NodeValueIterator(Node node) {
-            this.node = node;
+        public ListNodeValueIterator(Node currentNode, int index) {
+            this.currentNode = currentNode;
+            this.index = index - 1;
         }
 
         @Override
         public boolean hasNext() {
-            return node != null;
+            return nextIndex() < size();
         }
 
         @Override
         public T next() {
-            T value = node.value();
-            node = node.next();
-            return value;
-        }
 
-        public Node getNode() {
-            return node;
-        }
-    }
+            index++;
 
-    private class ListNodeValueIterator extends NodeValueIterator implements ListIterator<T> {
+            T returnValue;
 
-        private int index;
+            if (index != 0) {
+                previousNode = currentNode;
+                currentNode = currentNode.next;
+            }
 
-        public ListNodeValueIterator(Node node, int index) {
-            super(node);
-            this.index = index;
+            returnValue = currentNode.value;
+
+            return returnValue;
         }
 
         @Override
@@ -529,10 +486,6 @@ public class NormalinoList<T> implements List<T> {
             return index - 1;
         }
 
-        public int currentIndex() {
-            return index;
-        }
-
         @Override
         public int nextIndex() {
             return index + 1;
@@ -540,8 +493,19 @@ public class NormalinoList<T> implements List<T> {
 
         @Override
         public void remove() {
-            index--;
-            NormalinoList.this.remove(index);
+
+            if (index == 0) {
+                tail = currentNode.next;
+                if (tail == null)
+                    head = null;
+            } else {
+                previousNode.next = previousNode.hasNext() ? previousNode.next.next : null;
+                if (previousNode.next == null)
+                    head = previousNode;
+                index--;
+            }
+
+            size--;
         }
 
         @Override
@@ -552,12 +516,6 @@ public class NormalinoList<T> implements List<T> {
         @Override
         public void add(T element) {
             NormalinoList.this.add(index, element);
-        }
-
-        @Override
-        public T next() {
-            index++;
-            return super.next();
         }
     }
 }
