@@ -1,17 +1,19 @@
-package ru.clevertec.normalino.list;
+package ru.clevertec.custom.list.unsynchronized;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.clevertec.custom.list.Data;
+import ru.clevertec.custom.list.SinglyLinkedList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AddTests {
 
-    private NormalinoList<String> list;
+    private SinglyLinkedList<String> list;
 
     @BeforeEach
     public void beforeEach() {
-        list = new NormalinoList<>();
+        list = new SinglyLinkedList<>();
     }
 
     @Test
@@ -76,7 +78,7 @@ public class AddTests {
         final var initialSize = 5;
         Data.seed(list, initialSize);
 
-        var listCopy = new NormalinoList<>(list);
+        var listCopy = new SinglyLinkedList<>(list);
         var newItem = "addByIndexToCenter";
 
         var centerIndex = list.size() / 2; // 2
@@ -104,9 +106,9 @@ public class AddTests {
         var exceptedSize = initialListSize + subListSize;
 
         Data.seed(list, initialListSize);
-        var listCopy = new NormalinoList<>(list);
+        var listCopy = new SinglyLinkedList<>(list);
 
-        var subList = new NormalinoList<String>();
+        var subList = new SinglyLinkedList<String>();
         Data.seed(subList, subListSize, "subListItem");
 
         list.addAll(subList);
@@ -130,9 +132,9 @@ public class AddTests {
         final var exceptedSize = initialListSize + subListSize;
 
         Data.seed(list, initialListSize);
-        var listCopy = new NormalinoList<>(list);
+        var listCopy = new SinglyLinkedList<>(list);
 
-        var subList = new NormalinoList<String>();
+        var subList = new SinglyLinkedList<String>();
         Data.seed(subList, subListSize, "subListItem");
 
         list.addAll(0, subList);
@@ -156,9 +158,9 @@ public class AddTests {
         final var exceptedSize = initialListSize + subListSize;
 
         Data.seed(list, initialListSize);
-        var listCopy = new NormalinoList<>(list);
+        var listCopy = new SinglyLinkedList<>(list);
 
-        var subList = new NormalinoList<String>();
+        var subList = new SinglyLinkedList<String>();
         Data.seed(subList, subListSize, "subListItem");
 
         list.addAll(list.size(), subList);
@@ -182,9 +184,9 @@ public class AddTests {
         final var exceptedSize = initialListSize + subListSize;
 
         Data.seed(list, initialListSize);
-        var listCopy = new NormalinoList<>(list);
+        var listCopy = new SinglyLinkedList<>(list);
 
-        var subList = new NormalinoList<String>();
+        var subList = new SinglyLinkedList<String>();
         Data.seed(subList, subListSize, "subListItem");
 
         var centerIndex = list.size() / 2;

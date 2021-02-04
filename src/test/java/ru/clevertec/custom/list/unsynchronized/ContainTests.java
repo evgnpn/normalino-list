@@ -1,7 +1,9 @@
-package ru.clevertec.normalino.list;
+package ru.clevertec.custom.list.unsynchronized;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.clevertec.custom.list.Data;
+import ru.clevertec.custom.list.SinglyLinkedList;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -11,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContainTests {
 
-    private NormalinoList<String> list;
+    private SinglyLinkedList<String> list;
 
     @BeforeEach
     public void beforeEach() {
-        list = new NormalinoList<>();
+        list = new SinglyLinkedList<>();
         Data.seed(list, 10);
     }
 
