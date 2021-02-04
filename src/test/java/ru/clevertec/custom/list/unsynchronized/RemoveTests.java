@@ -1,20 +1,24 @@
-package ru.clevertec.normalino.list;
+package ru.clevertec.custom.list.unsynchronized;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.clevertec.custom.list.Data;
+import ru.clevertec.custom.list.SinglyLinkedList;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class RemoveTests {
 
-    private NormalinoList<String> list;
+    private SinglyLinkedList<String> list;
 
     @BeforeEach
     public void beforeEach() {
-        list = new NormalinoList<>();
+        list = new SinglyLinkedList<>();
         Data.seed(list, 10);
     }
 
@@ -67,7 +71,7 @@ public class RemoveTests {
         var object = list.get(objIndex);
         var removed = list.remove(object);
 
-        assertTrue(removed);
+        Assertions.assertTrue(removed);
         assertFalse(list.contains(object));
 
         assertEquals(list.size() + 1, srcSize);
