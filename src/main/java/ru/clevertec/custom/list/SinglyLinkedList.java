@@ -41,7 +41,7 @@ public final class SinglyLinkedList<T> implements List<T> {
     }
 
     @Override
-    publicgi boolean addAll(Collection<? extends T> collection) {
+    public boolean addAll(Collection<? extends T> collection) {
         if (collection == null || collection.isEmpty())
             return false;
         return isEmpty()
