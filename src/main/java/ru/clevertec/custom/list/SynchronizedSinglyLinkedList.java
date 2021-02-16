@@ -189,41 +189,41 @@ public final class SynchronizedSinglyLinkedList<T> implements List<T> {
 
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        readWriteLock.writeLock().lock();
+        readWriteLock.readLock().lock();
         try {
             return singlyLinkedList.subList(fromIndex, toIndex);
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.readLock().unlock();
         }
     }
 
     @Override
     public Object[] toArray() {
-        readWriteLock.writeLock().lock();
+        readWriteLock.readLock().lock();
         try {
             return singlyLinkedList.toArray();
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.readLock().unlock();
         }
     }
 
     @Override
     public <T1> T1[] toArray(T1[] array) {
-        readWriteLock.writeLock().lock();
+        readWriteLock.readLock().lock();
         try {
             return singlyLinkedList.toArray(array);
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.readLock().unlock();
         }
     }
 
     @Override
     public <T1> T1[] toArray(IntFunction<T1[]> generator) {
-        readWriteLock.writeLock().lock();
+        readWriteLock.readLock().lock();
         try {
             return singlyLinkedList.toArray(generator);
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.readLock().unlock();
         }
     }
 
@@ -239,11 +239,11 @@ public final class SynchronizedSinglyLinkedList<T> implements List<T> {
 
     @Override
     public ListIterator<T> listIterator(int index) {
-        readWriteLock.writeLock().lock();
+        readWriteLock.readLock().lock();
         try {
             return copyList(singlyLinkedList, index).listIterator();
         } finally {
-            readWriteLock.writeLock().unlock();
+            readWriteLock.readLock().unlock();
         }
     }
 
