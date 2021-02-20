@@ -241,7 +241,7 @@ public final class SynchronizedSinglyLinkedList<T> implements List<T> {
     public ListIterator<T> listIterator(int index) {
         readWriteLock.readLock().lock();
         try {
-            return copyList(singlyLinkedList, index).listIterator();
+            return new ReadOnlyListIterator<>(copyList(singlyLinkedList, index).listIterator());
         } finally {
             readWriteLock.readLock().unlock();
         }
@@ -253,5 +253,59 @@ public final class SynchronizedSinglyLinkedList<T> implements List<T> {
         while (it.hasNext())
             copyList.add(it.next());
         return copyList;
+    }
+
+    private static class ReadOnlyListIterator<T> implements ListIterator<T> {
+
+        private final ListIterator<T> iterator;
+
+        public ReadOnlyListIterator(ListIterator<T> iterator) {
+            this.iterator = iterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return iterator.next();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T previous() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int nextIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int previousIndex() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(T t) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(T t) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
